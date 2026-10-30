@@ -1,0 +1,773 @@
+
+--==================================================
+--                 VYRE HUB v2.1
+--          White / Pink / Magenta Edition
+--==================================================
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- Evitar interfaces duplicadas
+local old = PlayerGui:FindFirstChild("VYRE_HUB")
+if old then old:Destroy() end
+
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "VYRE_HUB"
+GUI.ResetOnSpawn = false
+GUI.IgnoreGuiInset = false
+GUI.DisplayOrder = 20
+GUI.Parent = PlayerGui
+
+-- COLORES
+local Theme = {
+    White = Color3.fromRGB(255,255,255),
+    Background = Color3.fromRGB(255,249,252),
+    Pink = Color3.fromRGB(255,190,220),
+    SoftPink = Color3.fromRGB(255,230,241),
+    Magenta = Color3.fromRGB(207,45,145),
+    Text = Color3.fromRGB(65,45,60),
+    Muted = Color3.fromRGB(155,125,145)
+}
+
+local Settings = {
+    ["Aimbot PC"] = false,
+    ["Aimrizogs"] = false,
+    ["Aimbot Target"] = false,
+    ["Hold Mode"] = true,
+    ["Use Prediction"] = false,
+    ["Team Check"] = false,
+    ["ESP Enabled"] = false,
+    ["Show Names"] = true,
+    ["Show Distance"] = false,
+    ["Delete Preview"] = false,
+    ["Teleport Preview"] = false
+}
+
+local function New(class, properties, parent)
+    local object = Instance.new(class)
+
+    for property, value in pairs(properties) do
+        object[property] = value
+    end
+
+    object.Parent = parent
+    return object
+end
+
+local function Round(object, radius)
+    New("UICorner", {
+        CornerRadius = UDim.new(0, radius)
+    }, object)
+end
+
+local function Border(object, color, thickness)
+    return New("UIStroke", {
+        Color = color,
+        Thickness = thickness or 1
+    }, object)
+end
+
+local function Animate(object, properties, duration)
+    local tween = TweenService:Create(
+        object,
+        TweenInfo.new(duration or 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        properties
+    )
+    tween:Play()
+    return tween
+end
+
+local function Text(parent, value, size, color, font)
+    return New("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = size,
+        Text = value,
+        TextColor3 = color or Theme.Text,
+        Font = font or Enum.Font.Gotham,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, parent)
+end
+
+--==================================================
+-- MAIN WINDOW
+--==================================================
+
+local Main = New("Frame", {
+    Name = "Main",
+    Size = UDim2.fromOffset(690, 440),
+    Position = UDim2.new(0.5,-345,0.5,-220),
+    BackgroundColor3 = Theme.White,
+    BorderSizePixel = 0,
+    ClipsDescendants = false
+}, GUI)
+
+Round(Main, 14)
+Border(Main, Theme.Pink, 2)
+
+-- Encabezado
+
+local Header = New("Frame", {
+    Size = UDim2.new(1,0,0,65),
+    BackgroundColor3 = Theme.Background,
+    BorderSizePixel = 0
+}, Main)
+
+Round(Header, 13)
+
+local Signature = Text(
+    Header,
+    "VYRE",
+    UDim2.fromOffset(130,42),
+    Theme.Magenta,
+    Enum.Font.Garamond
+)
+
+Signature.Position = UDim2.fromOffset(20,5)
+Signature.TextSize = 32
+Signature.Font = Enum.Font.Garamond
+Signature.TextWrapped = true
+Signature.TextXAlignment = Enum.TextXAlignment.Left
+
+local SignatureItalic = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Position = UDim2.fromOffset(21,37),
+    Size = UDim2.fromOffset(180,17),
+    Text = "H U B  •  VERSION 2.1",
+    TextColor3 = Theme.Muted,
+    TextSize = 9,
+    Font = Enum.Font.Gotham
+}, Header)
+
+local Minimize = New("TextButton", {
+    Size = UDim2.fromOffset(30,28),
+    Position = UDim2.new(1,-76,0,17),
+    Text = "—",
+    TextSize = 17,
+    TextColor3 = Theme.Magenta,
+    BackgroundColor3 = Theme.SoftPink,
+    Font = Enum.Font.GothamBold,
+    BorderSizePixel = 0
+}, Header)
+
+Round(Minimize, 7)
+
+local Close = New("TextButton", {
+    Size = UDim2.fromOffset(30,28),
+    Position = UDim2.new(1,-39,0,17),
+    Text = "×",
+    TextSize = 20,
+    TextColor3 = Theme.Magenta,
+    BackgroundColor3 = Theme.SoftPink,
+    Font = Enum.Font.GothamBold,
+    BorderSizePixel = 0
+}, Header)
+
+Round(Close, 7)
+
+--==================================================
+-- PINK STAR PARTICLES
+--==================================================
+
+local StarLayer = New("Frame", {
+    Name = "StarLayer",
+    Size = UDim2.new(1,0,1,0),
+    BackgroundTransparency = 1,
+    ClipsDescendants = true,
+    ZIndex = 5
+}, Main)
+
+local Random = Random.new()
+
+local function CreateStar()
+    local size = Random:NextInteger(3,6)
+
+    local star = New("TextLabel", {
+        Size = UDim2.fromOffset(size * 3,size * 3),
+        Position = UDim2.new(
+            Random:NextNumber(0.03,0.94),0,
+            Random:NextNumber(0.15,0.92),0
+        ),
+        BackgroundTransparency = 1,
+        Text = "✦",
+        TextColor3 = Color3.fromRGB(
+            235,
+            Random:NextInteger(120,190),
+            Random:NextInteger(175,220)
+        ),
+        TextSize = size * 3,
+        Font = Enum.Font.Gotham,
+        TextTransparency = 1,
+        ZIndex = 6
+    }, StarLayer)
+
+    local appear = TweenService:Create(
+        star,
+        TweenInfo.new(
+            Random:NextNumber(0.7,1.5),
+            Enum.EasingStyle.Sine
+        ),
+        {TextTransparency = 0.12}
+    )
+
+    appear:Play()
+    appear.Completed:Wait()
+
+    task.wait(Random:NextNumber(0.5,1.5))
+
+    local disappear = TweenService:Create(
+        star,
+        TweenInfo.new(1,Enum.EasingStyle.Sine),
+        {TextTransparency = 1}
+    )
+
+    disappear:Play()
+    disappear.Completed:Wait()
+
+    star:Destroy()
+end
+
+task.spawn(function()
+    while GUI.Parent do
+        task.spawn(CreateStar)
+        task.wait(Random:NextNumber(0.25,0.65))
+    end
+end)
+
+--==================================================
+-- SIDEBAR
+--==================================================
+
+local Sidebar = New("Frame", {
+    Position = UDim2.fromOffset(12,76),
+    Size = UDim2.new(0,145,1,-90),
+    BackgroundColor3 = Theme.Background,
+    BorderSizePixel = 0
+}, Main)
+
+Round(Sidebar, 11)
+Border(Sidebar, Theme.SoftPink, 1)
+
+Text(
+    Sidebar,
+    "NAVIGATION",
+    UDim2.new(1,-20,0,25),
+    Theme.Muted,
+    Enum.Font.GothamBold
+).Position = UDim2.fromOffset(12,12)
+
+local Content = New("ScrollingFrame", {
+    Position = UDim2.fromOffset(170,78),
+    Size = UDim2.new(1,-182,1,-92),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 3,
+    ScrollBarImageColor3 = Theme.Magenta,
+    CanvasSize = UDim2.new(0,0,0,0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y
+}, Main)
+
+local ContentLayout = New("UIListLayout", {
+    Padding = UDim.new(0,8),
+    SortOrder = Enum.SortOrder.LayoutOrder
+}, Content)
+
+New("UIPadding", {
+    PaddingTop = UDim.new(0,5),
+    PaddingBottom = UDim.new(0,12),
+    PaddingLeft = UDim.new(0,4),
+    PaddingRight = UDim.new(0,8)
+}, Content)
+
+--==================================================
+-- UI COMPONENTS
+--==================================================
+
+local function ClearContent()
+    for _, child in ipairs(Content:GetChildren()) do
+        if child:IsA("GuiObject") and child ~= ContentLayout then
+            child:Destroy()
+        end
+    end
+end
+
+local function Section(title)
+    local frame = New("Frame", {
+        Size = UDim2.new(1,0,0,32),
+        BackgroundColor3 = Theme.SoftPink,
+        BorderSizePixel = 0
+    }, Content)
+
+    Round(frame,7)
+
+    Text(
+        frame,
+        title,
+        UDim2.new(1,-20,1,0),
+        Theme.Magenta,
+        Enum.Font.GothamBold
+    ).Position = UDim2.fromOffset(11,0)
+end
+
+local function Toggle(name)
+    local row = New("Frame", {
+        Size = UDim2.new(1,0,0,39),
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel = 0
+    }, Content)
+
+    Round(row,7)
+    Border(row,Theme.SoftPink,1)
+
+    Text(row,name,UDim2.new(1,-85,1,0),Theme.Text).Position =
+        UDim2.fromOffset(12,0)
+
+    local button = New("TextButton", {
+        Size = UDim2.fromOffset(43,22),
+        Position = UDim2.new(1,-55,0.5,-11),
+        Text = "",
+        BackgroundColor3 = Settings[name] and Theme.Magenta or Theme.Pink,
+        BorderSizePixel = 0
+    }, row)
+
+    Round(button,20)
+
+    local dot = New("Frame", {
+        Size = UDim2.fromOffset(16,16),
+        Position = Settings[name] and UDim2.new(1,-19,0.5,-8)
+            or UDim2.fromOffset(3,3),
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel = 0
+    }, button)
+
+    Round(dot,20)
+
+    button.MouseButton1Click:Connect(function()
+        Settings[name] = not Settings[name]
+
+        Animate(button, {
+            BackgroundColor3 = Settings[name] and Theme.Magenta or Theme.Pink
+        })
+
+        Animate(dot, {
+            Position = Settings[name] and UDim2.new(1,-19,0.5,-8)
+                or UDim2.fromOffset(3,3)
+        })
+    end)
+end
+
+local function Slider(name, minimum, maximum, default)
+    local row = New("Frame", {
+        Size = UDim2.new(1,0,0,58),
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel = 0
+    }, Content)
+
+    Round(row,7)
+    Border(row,Theme.SoftPink,1)
+
+    Text(row,name,UDim2.new(0.7,0,0,23),Theme.Text).Position =
+        UDim2.fromOffset(12,3)
+
+    local value = default
+
+    local number = Text(
+        row,
+        tostring(value),
+        UDim2.fromOffset(60,23),
+        Theme.Magenta,
+        Enum.Font.GothamBold
+    )
+
+    number.Position = UDim2.new(1,-70,0,3)
+    number.TextXAlignment = Enum.TextXAlignment.Right
+
+    local bar = New("Frame", {
+        Position = UDim2.fromOffset(12,36),
+        Size = UDim2.new(1,-24,0,6),
+        BackgroundColor3 = Theme.SoftPink,
+        BorderSizePixel = 0
+    }, row)
+
+    Round(bar,5)
+
+    local fill = New("Frame", {
+        Size = UDim2.new((default-minimum)/(maximum-minimum),0,1,0),
+        BackgroundColor3 = Theme.Magenta,
+        BorderSizePixel = 0
+    },bar)
+
+    Round(fill,5)
+
+    local knob = New("Frame", {
+        Size = UDim2.fromOffset(13,13),
+        Position = UDim2.new((default-minimum)/(maximum-minimum),-6,0.5,-6),
+        BackgroundColor3 = Theme.Magenta,
+        BorderSizePixel = 0
+    },bar)
+
+    Round(knob,20)
+
+    local dragging = false
+
+    local function Update(x)
+        local percent = math.clamp(
+            (x-bar.AbsolutePosition.X)/bar.AbsoluteSize.X,
+            0,1
+        )
+
+        value = math.floor(minimum+(maximum-minimum)*percent)
+
+        fill.Size = UDim2.new(percent,0,1,0)
+        knob.Position = UDim2.new(percent,-6,0.5,-6)
+        number.Text = tostring(value)
+    end
+
+    bar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            Update(input.Position.X)
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (
+            input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch
+        ) then
+            Update(input.Position.X)
+        end
+    end)
+
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+local function Dropdown(name, options)
+    local index = 1
+
+    local row = New("Frame", {
+        Size = UDim2.new(1,0,0,42),
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel = 0
+    }, Content)
+
+    Round(row,7)
+    Border(row,Theme.SoftPink,1)
+
+    Text(row,name,UDim2.new(0.5,0,1,0),Theme.Text).Position =
+        UDim2.fromOffset(12,0)
+
+    local button = New("TextButton", {
+        Size = UDim2.fromOffset(145,27),
+        Position = UDim2.new(1,-155,0.5,-13),
+        Text = options[index].."  ▾",
+        TextColor3 = Theme.Magenta,
+        BackgroundColor3 = Theme.SoftPink,
+        Font = Enum.Font.Gotham,
+        TextSize = 11,
+        BorderSizePixel = 0
+    }, row)
+
+    Round(button,6)
+
+    button.MouseButton1Click:Connect(function()
+        index = index % #options + 1
+        button.Text = options[index].."  ▾"
+    end)
+end
+
+--==================================================
+-- COLOR WHEEL
+--==================================================
+
+local function ColorPicker(name, initial, callback)
+    local row = New("Frame", {
+        Size = UDim2.new(1,0,0,43),
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel = 0
+    }, Content)
+
+    Round(row,7)
+    Border(row,Theme.SoftPink,1)
+
+    Text(row,name,UDim2.new(1,-75,1,0),Theme.Text).Position =
+        UDim2.fromOffset(12,0)
+
+    local preview = New("TextButton", {
+        Size = UDim2.fromOffset(35,25),
+        Position = UDim2.new(1,-47,0.5,-12),
+        Text = "",
+        BackgroundColor3 = initial,
+        BorderSizePixel = 0
+    },row)
+
+    Round(preview,6)
+    Border(preview,Theme.Pink,1)
+
+    local popup = New("Frame", {
+        Size = UDim2.fromOffset(190,190),
+        Position = UDim2.new(1,-195,0,47),
+        BackgroundColor3 = Theme.White,
+        Visible = false,
+        ZIndex = 20,
+        BorderSizePixel = 0
+    }, Content)
+
+    Round(popup,12)
+    Border(popup,Theme.Pink,2)
+
+    local heading = Text(
+        popup,
+        "✦  COLOR WHEEL  ✦",
+        UDim2.new(1,-15,0,23),
+        Theme.Magenta,
+        Enum.Font.GothamBold
+    )
+    heading.Position = UDim2.fromOffset(10,5)
+    heading.ZIndex = 21
+
+    -- Rueda formada por tonos distribuidos en círculo
+    for i = 1,30 do
+        local angle = (i-1)*(math.pi*2/30)
+        local hue = (i-1)/30
+
+        local x = 95 + math.cos(angle)*57 - 10
+        local y = 105 + math.sin(angle)*57 - 10
+
+        local color = Color3.fromHSV(hue,0.72,1)
+
+        local swatch = New("TextButton", {
+            Size = UDim2.fromOffset(20,20),
+            Position = UDim2.fromOffset(x,y),
+            BackgroundColor3 = color,
+            Text = "",
+            BorderSizePixel = 0,
+            ZIndex = 22
+        },popup)
+
+        Round(swatch,20)
+
+        swatch.MouseButton1Click:Connect(function()
+            preview.BackgroundColor3 = color
+            callback(color)
+            popup.Visible = false
+        end)
+    end
+
+    preview.MouseButton1Click:Connect(function()
+        popup.Visible = not popup.Visible
+    end)
+end
+
+--==================================================
+-- TAB CONTENT
+--==================================================
+
+local function BuildTab(tab)
+    ClearContent()
+
+    if tab == "MAIN" then
+        Section("WELCOME TO VYRE")
+        Section("MAIN OPTIONS")
+        Toggle("Aimbot PC")
+        Toggle("Aimrizogs")
+        Toggle("Aimbot Target")
+        Toggle("ESP Enabled")
+
+        Section("QUICK SETTINGS")
+        Toggle("Show Names")
+        Toggle("Show Distance")
+
+    elseif tab == "AIM" then
+        Section("AIM OPTIONS")
+        Toggle("Aimbot PC")
+        Toggle("Aimrizogs")
+        Toggle("Aimbot Target")
+        Dropdown("Target Limb",{
+            "Head","UpperTorso","HumanoidRootPart"
+        })
+        Toggle("Hold Mode")
+
+        Section("AIMBOT CONFIG")
+        Slider("FOV",10,500,120)
+        Slider("FOV Transparency",0,100,50)
+        Slider("Max Distance",100,10000,1000)
+        Slider("Smoothing",1,100,25)
+        Slider("Prediction",0,100,10)
+        Toggle("Use Prediction")
+        Toggle("Team Check")
+
+        Section("COLOR SETTINGS")
+
+        ColorPicker("FOV Circle Color",Theme.Magenta,function(color)
+            Theme.Magenta = color
+        end)
+
+        ColorPicker("FOV Lock Color",Theme.Pink,function(color)
+            Theme.Pink = color
+        end)
+
+    elseif tab == "VISUAL" then
+        Section("VISUAL SETTINGS")
+        Toggle("ESP Enabled")
+        Toggle("Show Names")
+        Toggle("Show Distance")
+        Dropdown("ESP Mode",{
+            "Name","Distance","Name + Distance"
+        })
+        Slider("ESP Distance",100,10000,1000)
+
+        ColorPicker("ESP Color",Color3.fromRGB(255,80,170),function(color)
+            Theme.Magenta = color
+        end)
+
+    elseif tab == "DELETER" then
+        Section("DELETER TEST PANEL")
+        Toggle("Delete Preview")
+        Dropdown("Preview Mode",{
+            "Single","Multiple","All"
+        })
+        Slider("Preview Distance",10,500,100)
+
+    elseif tab == "TP" then
+        Section("TELEPORT TEST PANEL")
+        Toggle("Teleport Preview")
+        Dropdown("Destination",{
+            "Spawn","Checkpoint 1","Checkpoint 2"
+        })
+    end
+end
+
+--==================================================
+-- NAVIGATION
+--==================================================
+
+local Tabs = {"MAIN","AIM","VISUAL","DELETER","TP"}
+local Buttons = {}
+
+for i,tab in ipairs(Tabs) do
+    local button = New("TextButton", {
+        Size = UDim2.new(1,-16,0,38),
+        Position = UDim2.fromOffset(8,43+(i-1)*46),
+        Text = tab,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = Theme.Magenta,
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel = 0
+    },Sidebar)
+
+    Round(button,7)
+    Buttons[tab] = button
+
+    button.MouseButton1Click:Connect(function()
+        for _,other in pairs(Buttons) do
+            other.BackgroundColor3 = Theme.White
+        end
+
+        button.BackgroundColor3 = Theme.SoftPink
+        BuildTab(tab)
+    end
+end
+
+Buttons.MAIN.BackgroundColor3 = Theme.SoftPink
+BuildTab("MAIN")
+
+--==================================================
+-- DRAG WINDOW
+--==================================================
+
+local dragging = false
+local dragStart
+local startPosition
+
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPosition = Main.Position
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+
+        local delta = input.Position-dragStart
+
+        Main.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset+delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset+delta.Y
+        )
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+--==================================================
+-- MINIMIZE / RESTORE
+--==================================================
+
+local Floating = New("TextButton", {
+    Size = UDim2.fromOffset(55,55),
+    Position = UDim2.new(0,25,0.5,-27),
+    Text = "V",
+    TextSize = 26,
+    Font = Enum.Font.Garamond,
+    TextColor3 = Theme.White,
+    BackgroundColor3 = Theme.Magenta,
+    BorderSizePixel = 0,
+    Visible = false
+},GUI)
+
+Round(Floating,30)
+Border(Floating,Theme.Pink,2)
+
+local function HideHub()
+    Main.Visible = false
+    Floating.Visible = true
+end
+
+local function ShowHub()
+    Main.Visible = true
+    Floating.Visible = false
+end
+
+Minimize.MouseButton1Click:Connect(HideHub)
+Close.MouseButton1Click:Connect(HideHub)
+Floating.MouseButton1Click:Connect(ShowHub)
+
+UIS.InputBegan:Connect(function(input,processed)
+    if processed then return end
+
+    if input.KeyCode == Enum.KeyCode.K then
+        if Main.Visible then
+            HideHub()
+        else
+            ShowHub()
+        end
+    end
+end)
+
+print("VYRE HUB v2.1 loaded successfully")
